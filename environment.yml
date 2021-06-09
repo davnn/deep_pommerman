@@ -1,0 +1,36 @@
+name: rl
+channels:
+  - pytorch
+  - conda-forge
+dependencies:
+  - python==3.8.10
+
+  # Basic data science tools
+  - pandas
+  - numpy
+
+  # image
+  - pillow
+
+  # Notebook
+  - jupyterlab
+  - matplotlib
+  - tqdm
+
+  # RL
+  - gym
+  - gym-atari
+  - gym-box2d
+  - swig # necessary for atari envs
+  - ray-tune
+
+  - pytorch
+  - torchvision
+  - cudatoolkit=11.1
+
+  # Pip requirements
+  - pip
+  - pip:
+      - onnx
+      - onnx2pytorch
+      - stable-baselines3[extra]
