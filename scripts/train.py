@@ -1,25 +1,40 @@
-from multiprocessing import freeze_support
+from typing import Optional, Dict
 
 from graphic_pomme_env.wrappers import NUM_STACK
-
 from stable_baselines3 import PPO
-from stable_baselines3.common.env_util import SubprocVecEnv
-from stable_baselines3.common.env_checker import check_env
+from stable_baselines3.common.env_util import make_vec_env
+from stable_baselines3.common.callbacks import CallbackList, CheckpointCallback, EvalCallback
 
-# try to train against random agent who doesn't use bombs
 from scripts.agents import make_actor, ACTORS
 from scripts.env import GraphicPommerEnv
+from scripts.model import Extractor
 
-import sys
-sys.setrecursionlimit(100000)
+policy_kwargs = dict(
+    features_extractor_class=Extractor,
+    features_extractor_kwargs=dict(features_dim=256),
+)
+
+make_env = lambda: GraphicPommerEnv(num_stack=NUM_STACK, start_pos=0, opponent_actor=make_actor(ACTORS.simple),
+                                    board="GraphicOVOCompact-v0")
+checkpoint_callback = CheckpointCallback(save_freq=500000, save_path=f"./logs/", name_prefix="PPO_")
+eval_callback = EvalCallback(make_env(), best_model_save_path=f"./logs/best", log_path=f"./logs/results",
+                             eval_freq=100000)
+callback = CallbackList([checkpoint_callback, eval_callback])
+
+
+def create_model(env, path: Optional[str] = None, policy_kwargs: Optional[Dict] = None):
+    if path is not None:
+        model = PPO.load(path)
+        model.set_env(env)
+    elif policy_kwargs is not None:
+        model = PPO("CnnPolicy", env, n_steps=4096, ent_coef=0.0001, policy_kwargs=policy_kwargs, verbose=True)
+    else:
+        model = PPO("CnnPolicy", env, n_steps=4096, ent_coef=0.0001, verbose=True)
+    return model
+
 
 if __name__ == "__main__":
-    actor = make_actor(ACTORS.simple)
-    env_pom = GraphicPommerEnv(num_stack=NUM_STACK, start_pos=0, opponent_actor=actor,
-                               board="GraphicOVOCompact-v0")
-    check_env(env_pom)
-    n_cpu = 6
-    env = SubprocVecEnv([lambda: env_pom for i in range(n_cpu)])
-    model = PPO("CnnPolicy", env, verbose=1, ent_coef=0.001)
-    model = model.learn(total_timesteps=100000)  # num_update = total_timesteps // batch_size
-    model.save("ppoCNN10k")
+    env = make_vec_env(make_env, n_envs=2)
+    model = create_model(env=env)
+    model = model.learn(total_timesteps=50000000, callback=callback)
+    model.save("PPO")
