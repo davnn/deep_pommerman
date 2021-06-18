@@ -1,6 +1,3 @@
-'''The base simple agent use to train agents.
-This agent is also the benchmark for other agents.
-'''
 from collections import defaultdict
 import queue
 import random
@@ -57,7 +54,7 @@ def me_to_enemy_all_corridor(board, pos1, pos2):
             all_corridor_flag=False
             break
         pos=utility.get_next_position(pos, direction)
-    return all_corridor_flag    
+    return all_corridor_flag
 
 def must_place_bomb_test(obs):
     board=obs['board']
@@ -71,11 +68,12 @@ def must_place_bomb_test(obs):
     if obs['bomb_life'][my_position]>0:
         #already on bomb
         return False
-    if obs['teammate'].value not in obs['alive']:
-        e1,e2=enemies[0].value,enemies[1].value
-        if e1 in obs['alive'] and e2 in obs['alive']:
-            #two enemies alive, only me alive, not do this test..
-            return False
+    # UNCOMMENT IF PLAYING WITH TEAMMATES, THIS IS COMMENTED FOR 1v1
+    # if obs['teammate'].value not in obs['alive']:
+    #     e1,e2=enemies[0].value,enemies[1].value
+    #     if e1 in obs['alive'] and e2 in obs['alive']:
+    #         #two enemies alive, only me alive, not do this test..
+    #         return False
     for e in enemies:
         e=e.value
         if e not in obs['alive']:
@@ -92,18 +90,11 @@ def must_place_bomb_test(obs):
             return True
     return False
 
-SKIP_RATE=0 #Force to use stop action for some timesteps
 
-class SimpleAgentNoBombs(BaseAgent):
-    """This is a baseline agent. After you can beat it, submit your agent to
-    compete.
-    """
+class CautiousAgent(BaseAgent):
 
     def __init__(self, *args, **kwargs):
-        super(SimpleAgentNoBombs, self).__init__(*args, **kwargs)
-        self.counterSkip = 1
-#        self.currentSkipRate = random.randrange(0, MAX_SKIP_RATE, 2)
-        self.currentSkipRate= SKIP_RATE
+        super(CautiousAgent, self).__init__(*args, **kwargs)
 
         # Keep track of recently visited uninteresting positions so that we
         # don't keep visiting the same places.
@@ -127,12 +118,6 @@ class SimpleAgentNoBombs(BaseAgent):
         #do a must_bomb_test, if it can kill the opponent with guarantee, place a bomb here
         if must_place_bomb_test(obs):
             return constants.Action.Bomb.value
-
-     #   if self.currentSkipRate != 0 and self.counterSkip % self.currentSkipRate != 0:
-     #       self.counterSkip = self.counterSkip + 1
-     #       return constants.Action.Stop.value
-     #   else:
-     #       self.counterSkip = 1
 
         my_position = tuple(obs['position'])
         board = np.array(obs['board'])

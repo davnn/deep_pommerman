@@ -2,7 +2,7 @@ import torch
 import numpy as np
 from enum import Enum
 from pommerman.agents import BaseAgent, SimpleAgent, RandomAgent, RandomAgentNoBomb, SmartRandomAgent, \
-    SmartRandomAgentNoBomb, StaticAgent
+    SmartRandomAgentNoBomb, StaticAgent, CautiousAgent
 
 
 class ACTORS(Enum):
@@ -13,11 +13,14 @@ class ACTORS(Enum):
     simple = 4
     simple_cautious = 5
     model = 6
+    cautious = 7
 
 
 def make_actor(kind, model=None):
     if kind == ACTORS.simple:
         return SimpleAgent()
+    if kind == ACTORS.cautious:
+        return CautiousAgent()
     elif kind == ACTORS.idle:
         return StaticAgent()
     elif kind == ACTORS.random:

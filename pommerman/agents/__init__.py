@@ -12,7 +12,7 @@ from .random_agent import SmartRandomAgentNoBomb
 from .random_agent import SlowRandomAgentNoBomb
 from .random_agent import TimedRandomAgentNoBomb
 from .simple_agent import SimpleAgent
-# from .simple_agent_cautious_bomb import CautiousAgent
+from .simple_agent_cautious_bomb import CautiousAgent
 from .tensorforce_agent import TensorForceAgent
 from .model import CNN_LSTM
 
